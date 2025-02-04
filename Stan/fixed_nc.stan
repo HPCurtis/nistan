@@ -1,9 +1,9 @@
 data {
     int<lower=1> N;                  // Number of observations
-    int<lower=1> num_stims;           // Number of stimuli
-    int<lower=1> num_subs;            // Number of subjects
-    int<lower=1, upper=num_subs> sub_num[N]; // Subject indices
-    matrix[N, num_stims] stim_data;   // Stimulus-related data
+    int<lower=1> n_stims;           // Number of stimuli
+    int<lower=1> n_subs;            // Number of subjects
+    int<lower=1, upper=n_subs> sub_num[N]; // Subject indices
+    matrix[N, n_stims] stim_data;   // Stimulus-related data
     vector[N] y;                      // Observed response
     vector[N] y_t_1;                  // Lag-1 response (if AR terms included)
     vector[N] y_t_2;                  // Lag-2 response (if AR terms included)
@@ -11,12 +11,12 @@ data {
 }
 
 parameters {
-    vector[num_stims] b;                      // Fixed effects
+    vector[n_stims] b;                      // Fixed effects
     real<lower=0> sigma;                      // Observation noise
     real<lower=0> sigma_sub_A;                // Random slope variance A
     real<lower=0> sigma_sub_B;                // Random slope variance B
-    vector[num_subs] z_u0;                    // Standard normal for random slopes A (non-centered)
-    vector[num_subs] z_u1;                    // Standard normal for random slopes B (non-centered)
+    vector[n_subs] z_u0;                    // Standard normal for random slopes A (non-centered)
+    vector[n_subs] z_u1;                    // Standard normal for random slopes B (non-centered)
     real ar1;                                 // AR(1) coefficient
     real ar2;                                 // AR(2) coefficient
 }
@@ -26,8 +26,8 @@ transformed parameters {
     vector[num_subs] u1 = z_u1 * sigma_sub_B; // Non-centered random slopes B
     vector[N] mu;
 
-    mu = u0[sub_num] .* rowSums(stim_data[, 1:(num_stims/2)]) +
-         u1[sub_num] .* rowSums(stim_data[, (num_stims/2+1):num_stims]) +
+    mu = u0[sub_num] .* u0_stim_data +
+         u1[sub_num] .* u1_stim_data +
          stim_data * b;
 
     if (ar_flag == 1) {
@@ -51,10 +51,4 @@ model {
 
     // Likelihood
     y ~ normal(mu, sigma);
-}
-
-// Generated quantities for contrasts
-generated quantities {
-    real cond_diff;
-    cond_diff = mean(b[(num_stims/2 + 1):num_stims]) - mean(b[1:(num_stims/2)]);
 }
