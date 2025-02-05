@@ -3,13 +3,13 @@ from cmdstanpy import CmdStanModel, write_stan_json
 import arviz as az
 
 # Complie stan model
-model = CmdStanModel(stan_file="Stan/no_random_stim.stan")
+model = CmdStanModel(stan_file="Stan/nostim.stan")
 
 # Example usage:
 # Ensure p, q, and s are defined
-p = 10  # Number of subjects
-q = 40  # Number of stimuli
-s = 0.5  # Stimulus standard deviation scaling factor
+p = 16  # Number of subjects
+q = 16  # Number of stimuli
+s = 0.0001   # Stimulus standard deviation scaling factor
 
 # Run simulation
 data = simulate(num_subs=int(p), num_stims=int(q), A_mean=1, B_mean=2, sub_A_sd=1,
@@ -37,4 +37,4 @@ write_stan_json("data.json", data = stan_data)
 
 fit = model.sample("data.json", chains = 4 , iter_sampling=500, parallel_chains = 4)
 # TODO: No warnins given write model check code.
-print(az.summary(fit, var_names = ['b', "ar1", "ar2"]))
+print(az.summary(fit, var_names = ['b', "ar1", "ar2", "sigma"]))

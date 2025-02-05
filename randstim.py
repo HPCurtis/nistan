@@ -7,7 +7,7 @@ model = CmdStanModel(stan_file="Stan/rand.stan")
 
 # Example usage:
 # Ensure p, q, and s are defined
-p = 64  # Number of subjects
+p = 16  # Number of subjects
 q = 16  # Number of stimuli
 s = 0.0001  # Stimulus standard deviation scaling factor
 
@@ -39,6 +39,7 @@ stan_data = {
 
 write_stan_json("data.json", data = stan_data)
 
+# Maxtreedepth needs to be inreased from default  for identifiability. 
 fit = model.sample("data.json", chains = 4, iter_warmup = 500, iter_sampling=500, parallel_chains = 4, max_treedepth = 15)
 # TODO: No warnins given write model check code.
 print(az.summary(fit, var_names = ['b', "ar1", "ar2","diff"]))
